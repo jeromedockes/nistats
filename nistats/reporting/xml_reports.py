@@ -4,6 +4,7 @@ from lxml import etree
 from lxml.builder import ElementMaker
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 
 
@@ -56,6 +57,7 @@ XSLT = b"""<?xml version="1.0" encoding="UTF-8"?>
 
 <xsl:template match="nistats:design_matrices">
 <h2>Design matrices</h2>
+<xsl:copy-of select="table"/>
 </xsl:template>
 
 <xsl:template match="nistats:contrast">
@@ -74,7 +76,20 @@ NS = ElementMaker(namespace="https://nistats.github.io",
                   nsmap={'nistats': "https://nistats.github.io"})
 
 
-def make_contrast(model, contrast):
+def fig_to_svg(fig=None):
+    if fig is None:
+        fig = plt.gcf()
+    buf = io.BytesIO()
+    try:
+        fig.savefig(buf, format='svg')
+        buf.seek(0)
+        svg = etree.fromstring(buf.read())
+    finally:
+        buf.close()
+    return svg
+
+
+def report_contrast(model, contrast):
     fig = plt.figure()
     plt.scatter(*np.random.randn(2, 30))
     img = fig_to_svg(fig)
@@ -85,7 +100,7 @@ def make_contrast(model, contrast):
         NS.stat_map_plot(img))
 
 
-def make_model_params(model):
+def report_model_params(model):
     parts = [NS.model_parameter(NS.parameter_name(k),
                                 NS.parameter_value(str(v)),
                                 NS.parameter_description(k))
@@ -93,16 +108,10 @@ def make_model_params(model):
     return NS.model_parameters(*parts)
 
 
-def fig_to_svg(fig=None):
-    if fig is None:
-        fig = plt.gcf()
-    buf = io.BytesIO()
-    fig.savefig(buf, format='svg')
-    buf.seek(0)
-    svg = buf.read()
-    buf.close()
-    svg = etree.fromstring(svg)
-    return svg
+def report_design_matrices(model):
+    design = pd.DataFrame(np.random.randn(4, 3), columns=list('ABC'))
+    table = design.to_html()
+    return etree.XML(table)
 
 
 def make_report(model, contrasts):
@@ -112,9 +121,12 @@ def make_report(model, contrasts):
         'nistats:title', namespaces=NSMAP)[0].text = 'Nistats Report'
     tree.xpath(
         'nistats:model_info', namespaces=NSMAP)[0].append(
-            make_model_params(model))
+            report_model_params(model))
+    tree.xpath(
+        'nistats:design_matrices', namespaces=NSMAP)[0].append(
+            report_design_matrices(model))
     for contrast in contrasts:
         tree.xpath('nistats:contrast_list', namespaces=NSMAP
-                   )[0].append(make_contrast(model, contrast))
+                   )[0].append(report_contrast(model, contrast))
     transform = etree.XSLT(etree.XML(XSLT))
     return tree, transform(tree)
