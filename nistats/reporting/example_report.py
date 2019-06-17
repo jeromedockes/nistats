@@ -1,11 +1,14 @@
 from sklearn.utils import Bunch
+import joblib
 from nistats.datasets import fetch_bids_langloc_dataset
 from nistats.first_level_model import first_level_models_from_bids
 from nistats.reporting import xml_reports
 
-verbose = True
+verbose = False
+MEMORY = joblib.Memory('/tmp/nistats_cache')
 
 
+@MEMORY.cache
 def get_model():
     data_dir, _ = fetch_bids_langloc_dataset()
 
@@ -26,7 +29,7 @@ def get_model():
     return model
 
 
-model = {'a': 1, 'b': 1e-6}
+model = get_model()
 
 xml, html = xml_reports.make_report(
     model, ['language - string', 'string - language'])
@@ -39,11 +42,17 @@ if verbose:
         xml_declaration=True, encoding='utf-8').decode('utf-8'))
 
 html = xml_reports.etree.tostring(
-    html, pretty_print=True,
+    html, pretty_print=False,
     xml_declaration=True, encoding='utf-8').decode('utf-8')
 
 if verbose:
     print(html)
 
+with open('/tmp/report.xhtml', 'w') as f:
+    f.write(html)
+
 with open('/tmp/report.html', 'w') as f:
     f.write(html)
+
+
+print(model.design_matrices_[0].head())
