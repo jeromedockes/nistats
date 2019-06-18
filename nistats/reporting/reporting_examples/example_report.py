@@ -4,7 +4,6 @@ from nistats.datasets import fetch_bids_langloc_dataset
 from nistats.first_level_model import first_level_models_from_bids
 from nistats.reporting import xml_reports
 
-verbose = False
 MEMORY = joblib.Memory('/tmp/nistats_cache')
 
 
@@ -34,19 +33,16 @@ model = get_model()
 xml, html = xml_reports.make_report(
     model, ['language - string', 'string - language'])
 
-if verbose:
-    print('\n')
-
-    print(xml_reports.etree.tostring(
-        xml, pretty_print=True,
-        xml_declaration=True, encoding='utf-8').decode('utf-8'))
+xml = xml_reports.etree.tostring(
+    xml, pretty_print=True,
+    xml_declaration=True, encoding='utf-8').decode('utf-8')
 
 html = xml_reports.etree.tostring(
     html, pretty_print=False,
     xml_declaration=True, encoding='utf-8').decode('utf-8')
 
-if verbose:
-    print(html)
+with open('/tmp/report.xml', 'w') as f:
+    f.write(xml)
 
 with open('/tmp/report.xhtml', 'w') as f:
     f.write(html)
@@ -54,5 +50,4 @@ with open('/tmp/report.xhtml', 'w') as f:
 with open('/tmp/report.html', 'w') as f:
     f.write(html)
 
-
-print(model.design_matrices_[0].head())
+print('reports in /tmp/report.xml, /tmp/report.xhtml, /tmp/report.html')
