@@ -59,23 +59,28 @@
     <div>
       <h2>Contrast: <xsl:value-of select="nistats:contrast_name"/></h2>
       <p>Statistic type: <xsl:value-of select="nistats:statistic_type"/></p>
-      <xsl:apply-templates select="nistats:stat_map_plot/svg:svg" mode="remove-ids"/>
+      <xsl:apply-templates />
     </div>
   </xsl:template>
 
-  <xsl:template match="@*|node()" mode="remove-ids">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()" mode="remove-ids"/>
-    </xsl:copy>
+  <xsl:template match="nistats:clusters_table">
+    <h3>Peak activations</h3>
+    <xsl:apply-templates select="table" mode="pandas-table" />
   </xsl:template>
 
-  <xsl:template match="@id" mode="remove-ids"/>
+  <xsl:template match="svg:svg">
+    <xsl:copy-of select="."/>
+  </xsl:template>
 
   <xsl:template match="nistats:design_matrices">
     <hr/>
     <div>
       <h2>Design matrices</h2>
-      <xsl:apply-templates select="table" mode="pandas-table"/>
+      <xsl:for-each select="nistats:design_matrix">
+        <h3>Run <xsl:value-of select="position()"/></h3>
+        <xsl:apply-templates select="svg:svg"/>
+        <!-- <xsl:apply-templates select="table" mode="pandas-table"/> -->
+      </xsl:for-each>
     </div>
   </xsl:template>
 
