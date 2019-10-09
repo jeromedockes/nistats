@@ -62,8 +62,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     acceptable_contrast_types = ['t', 'F']
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
-            '"{0}" is not a known contrast type. Allowed types are {1}'.format(
-                contrast_type, acceptable_contrast_types))
+            '"{0}" is not a known contrast type. Allowed types are {1}'.
+            format(contrast_type, acceptable_contrast_types))
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
@@ -72,7 +72,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             label_mask = labels == label_
             resl = regression_result[label_].Tcontrast(con_val)
             effect_[:, label_mask] = resl.effect.T
-            var_[label_mask] = (resl.sd**2).T
+            var_[label_mask] = (resl.sd ** 2).T
     elif contrast_type == 'F':
         from scipy.linalg import sqrtm
         effect_ = np.zeros((dim, labels.size))
@@ -81,20 +81,16 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             label_mask = labels == label_
             reg = regression_result[label_]
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
-            invcov = np.linalg.inv(
-                np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0)))
+            invcov = np.linalg.inv(np.atleast_2d(
+                    reg.vcov(matrix=con_val, dispersion=1.0)))
             wcbeta = np.dot(sqrtm(invcov), cbeta)
             rss = reg.dispersion
             effect_[:, label_mask] = wcbeta
             var_[label_mask] = rss
 
     dof_ = regression_result[label_].df_resid
-    return Contrast(
-        effect=effect_,
-        variance=var_,
-        dim=dim,
-        dof=dof_,
-        contrast_type=contrast_type)
+    return Contrast(effect=effect_, variance=var_, dim=dim, dof=dof_,
+                    contrast_type=contrast_type)
 
 
 def _fixed_effect_contrast(labels, results, con_vals, contrast_type=None):
@@ -130,14 +126,8 @@ class Contrast(object):
     (high-dimensional F constrasts may lead to memory breakage).
     """
 
-    def __init__(self,
-                 effect,
-                 variance,
-                 dim=None,
-                 dof=DEF_DOFMAX,
-                 contrast_type='t',
-                 tiny=DEF_TINY,
-                 dofmax=DEF_DOFMAX):
+    def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
+                 contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
         ----------
@@ -237,8 +227,8 @@ class Contrast(object):
         if self.contrast_type == 't':
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
-            p_values = sps.f.sf(self.stat_, self.dim,
-                                np.minimum(self.dof, self.dofmax))
+            p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
+                                self.dof, self.dofmax))
         else:
             raise ValueError('Unknown statistic type')
         self.p_value_ = p_values
@@ -280,24 +270,17 @@ class Contrast(object):
             warn('Running approximate fixed effects on F statistics.')
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
-        return Contrast(
-            effect=effect_,
-            variance=variance_,
-            dim=self.dim,
-            dof=dof_,
-            contrast_type=self.contrast_type)
+        return Contrast(effect=effect_, variance=variance_, dim=self.dim,
+                        dof=dof_, contrast_type=self.contrast_type)
 
     def __rmul__(self, scalar):
         """Multiplication of the contrast by a scalar"""
         scalar = float(scalar)
         effect_ = self.effect * scalar
-        variance_ = self.variance * scalar**2
+        variance_ = self.variance * scalar ** 2
         dof_ = self.dof
-        return Contrast(
-            effect=effect_,
-            variance=variance_,
-            dof=dof_,
-            contrast_type=self.contrast_type)
+        return Contrast(effect=effect_, variance=variance_, dof=dof_,
+                        contrast_type=self.contrast_type)
 
     __mul__ = __rmul__
 
