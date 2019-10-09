@@ -84,7 +84,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
         `pandas.DataFrame.eval`. Basically one can use the name of the
         conditions as they appear in the design matrix of the fitted model
         combined with operators +- and combined with numbers with operators
-        +-*/.
+        +-`*`/.
 
     design_matrix: pandas DataFrame
 

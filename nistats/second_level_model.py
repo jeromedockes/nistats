@@ -423,7 +423,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             string can be a formula compatible with `pandas.DataFrame.eval`.
             Basically one can use the name of the conditions as they appear in
             the design matrix of the fitted model combined with operators +-
-            and combined with numbers with operators +-*/. The default (None)
+            and combined with numbers with operators +-`*`/. The default (None)
             is accepted if the design matrix has a single column, in which case
             the only possible contrast array([1]) is applied; when the design
             matrix has multiple columns, an error is raised.

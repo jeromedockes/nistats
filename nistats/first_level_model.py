@@ -522,7 +522,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             `pandas.DataFrame.eval`. Basically one can use the name of the
             conditions as they appear in the design matrix of the fitted model
             combined with operators +- and combined with numbers with operators
-            +-*/.
+            +-`*`/.
         stat_type : {'t', 'F'}, optional
             type of the contrast
 
