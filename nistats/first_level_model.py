@@ -30,12 +30,11 @@ from sklearn.externals.joblib import Memory
 from nilearn.input_data import NiftiMasker
 from nilearn._utils import CacheMixin
 from nilearn._utils.niimg_conversions import check_niimg
-from patsy import DesignInfo
 from sklearn.externals.joblib import (Parallel,
                                       delayed,
                                       )
 
-from .contrasts import _fixed_effect_contrast
+from .contrasts import _fixed_effect_contrast, expression_to_contrast_vector
 from .design_matrix import make_first_level_design_matrix
 from .regression import (ARModel,
                          OLSModel,
@@ -520,12 +519,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             (one array per run). If only one array is provided when there
             are several runs, it will be assumed that the same contrast is
             desired for all runs. The string can be a formula compatible with
-            the linear constraint of the Patsy library. Basically one can use
-            the name of the conditions as they appear in the design matrix of
-            the fitted model combined with operators /\*+- and numbers.
-            Please checks the patsy documentation for formula examples:
-            http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
-
+            `pandas.DataFrame.eval`. Basically one can use the name of the
+            conditions as they appear in the design matrix of the fitted model
+            combined with operators +- and combined with numbers with operators
+            +-*/.
         stat_type : {'t', 'F'}, optional
             type of the contrast
 
@@ -551,11 +548,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('contrast_def must be an array or str or list of'
                              ' (array or str)')
 
-        # Translate formulas to vectors with patsy
-        design_info = DesignInfo(self.design_matrices_[0].columns.tolist())
+        # Translate formulas to vectors
+        design_columns = self.design_matrices_[0].columns.tolist()
         for cidx, con in enumerate(con_vals):
-            if not isinstance(con, np.ndarray):
-                con_vals[cidx] = design_info.linear_constraint(con).coefs
+            if isinstance(con, _basestring):
+                con_vals[cidx] = expression_to_contrast_vector(
+                    con, design_columns)
 
         n_runs = len(self.labels_)
         if len(con_vals) != n_runs:
