@@ -19,7 +19,7 @@ DEF_DOFMAX = 1e10
 
 def expression_to_contrast_vector(expression, design_columns):
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
-    contrast_vector = df.eval(expression).values
+    contrast_vector = df.eval(expression, engine="python").values
     return contrast_vector
 
 
