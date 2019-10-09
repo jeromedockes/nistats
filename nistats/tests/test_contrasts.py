@@ -20,6 +20,10 @@ def test_expression_to_contrast_vector():
     assert np.allclose(contrast, [0., -1.9, 0., -1., 2.])
     contrast = expression_to_contrast_vector("xy_z", cols)
     assert np.allclose(contrast, [0., 0., 1., 0., 0.])
+    cols = ["a", "b", "a - b"]
+    contrast = expression_to_contrast_vector("a - b", cols)
+    # this is patsy's behavior
+    assert np.allclose(contrast, [0., 0., 1.])
     cols = ["column_1"]
     contrast = expression_to_contrast_vector("column_1", cols)
     assert np.allclose(contrast, [1.])
