@@ -514,7 +514,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
         contrast_def : str or array of shape (n_col) or list of (string or
                        array of shape (n_col))
-                       
+
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there
             are several runs, it will be assumed that the same contrast is
@@ -523,6 +523,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             conditions as they appear in the design matrix of the fitted model
             combined with operators +- and combined with numbers with operators
             +-`*`/.
+
         stat_type : {'t', 'F'}, optional
             type of the contrast
 
