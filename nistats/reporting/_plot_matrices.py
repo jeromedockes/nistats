@@ -106,14 +106,14 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     Plot Axes object
 
     """
-    
+
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
         contrast_def = expression_to_contrast_vector(
             contrast_def, design_column_names)
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
-    
+
     if ax is None:
         plt.figure(figsize=(8, 4))
         ax = plt.gca()
