@@ -436,7 +436,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                     % (run_idx + 1, n_runs, remaining))
 
             # Build the experimental design for the glm
-            run_img = check_niimg(run_img, ensure_ndim=4)
+            # run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
                 n_scans = run_img.get_data().shape[3]
                 if confounds is not None:
@@ -579,8 +579,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
-            output.header['descrip'] = (
-                '%s of contrast %s' % (output_type_, contrast_name))
+            # output.header['descrip'] = (
+            #     '%s of contrast %s' % (output_type_, contrast_name))
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output

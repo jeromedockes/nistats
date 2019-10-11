@@ -93,9 +93,29 @@ design_matrix = make_first_level_design_matrix(frame_times,
 # `labels` tags voxels according to noise autocorrelation.
 # `estimates` contains the parameter estimates.
 # We keep them for later contrast computation.
+from nilearn.input_data import NiftiMasker
 
-from nistats.first_level_model import run_glm
-labels, estimates = run_glm(texture.T, design_matrix.values)
+
+class IdentityMasker(NiftiMasker):
+    def __init__(self):
+        self.mask_img = np.ones(1)
+        self.mask_img_ = np.ones(1)
+
+    def fit(self, *args, **kwargs):
+        return self
+
+    def transform(self, x):
+        return x
+
+    def inverse_transform(self, x):
+        return x
+
+    def fit_transform(self, x):
+        return x
+
+from nistats.first_level_model import FirstLevelModel
+glm = FirstLevelModel(mask_img=IdentityMasker())
+glm.fit(texture.T, design_matrices=design_matrix)
 
 #########################################################################
 # Estimate contrasts
@@ -167,10 +187,9 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, right hemisphere' %
           (index + 1, len(contrasts), contrast_id))
     # compute contrast-related statistics
-    contrast = compute_contrast(labels, estimates, contrast_val,
-                                contrast_type='t')
+    contrast = glm.compute_contrast(contrast_val, stat_type='t')
     # we present the Z-transform of the t map
-    z_score = contrast.z_score()
+    z_score = contrast
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
@@ -191,7 +210,7 @@ texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
 
 #########################################################################
 # Estimate the General Linear Model
-labels, estimates = run_glm(texture.T, design_matrix.values)
+glm.fit(texture.T, design_matrices=design_matrix)
 
 #########################################################################
 # Create contrast-specific maps
@@ -199,9 +218,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, left hemisphere' %
           (index + 1, len(contrasts), contrast_id))
     # compute contrasts
-    contrast = compute_contrast(labels, estimates, contrast_val,
-                                contrast_type='t')
-    z_score = contrast.z_score()
+    contrast = glm.compute_contrast(contrast_val, stat_type='t')
+    z_score = contrast
     # Plot the result
     plotting.plot_surf_stat_map(
         fsaverage.infl_left, z_score, hemi='left',
