@@ -197,6 +197,24 @@ def test_high_level_glm_null_contrasts():
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
 
+def test_high_level_glm_different_design_matrices():
+    # test that one can estimate a contrast when design matrices are different
+    # new API
+    shapes, rk1 = ((7, 8, 7, 15),), 3
+    mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk1)
+    shapes, rk2 = ((7, 8, 7, 19),), 4
+    _, fmri_data_, design_matrices_ = _generate_fake_fmri_data(shapes, rk2)
+    fmri_data += fmri_data_
+    design_matrices += design_matrices_
+
+    multi_session_model = FirstLevelModel(mask_img=None).fit(
+        fmri_data, design_matrices=design_matrices)
+    z1 = multi_session_model.compute_contrast(
+        [np.eye(rk1)[:1], np.eye(rk2)[:1]])
+    assert z1.shape == (7, 8, 7)
+
+
+    
 def test_run_glm():
     # New API
     n, p, q = 100, 80, 10
